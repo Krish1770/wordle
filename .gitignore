@@ -1,0 +1,17 @@
+# IntelliJ IDE files
+.idea/
+*.iml
+out/
+target/
+
+# Backend build/target folders (example for Java/Maven/Gradle)
+build/
+.gradle/
+
+# Frontend dependencies (for later)
+node_modules/
+dist/
+
+# OS generated files
+.DS_Store
+Thumbs.dbg
