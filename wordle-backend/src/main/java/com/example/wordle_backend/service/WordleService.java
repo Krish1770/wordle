@@ -1,8 +1,10 @@
 package com.example.wordle_backend.service;
 
 
+import com.example.wordle_backend.common.GameNotFoundException;
 import com.example.wordle_backend.common.WordDictionary;
 import com.example.wordle_backend.dto.CheckWordDto;
+import com.example.wordle_backend.dto.GameStartResponseDto;
 import com.example.wordle_backend.dto.GuessResultDto;
 import com.example.wordle_backend.dto.ResponseDto;
 import com.example.wordle_backend.entity.Game;
@@ -28,15 +30,14 @@ public class WordleService {
     @Autowired
     private WordleRepoService wordleRepoService;
     
-    public ResponseEntity<ResponseDto> getSecretWord() {
+    public GameStartResponseDto getSecretWord() {
         String secretWord = wordDictionary.getSecretWord();
         Game game= Game.builder().secretWord(secretWord).build();
       game= wordleRepoService.Save(game);
-       return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(HttpStatus.OK,"value retrieved",game));
-
+        return new GameStartResponseDto(game.getGameId());
     }
 
-    public ResponseEntity<ResponseDto> validateWord(CheckWordDto checkWordDto) {
+    public GuessResultDto validateWord(CheckWordDto checkWordDto) {
            Optional<Game> game = wordleRepoService.findById(checkWordDto.getGameId());
            String guessWord= checkWordDto.getGuessWord();
         String[] arr =new String[5];
@@ -46,36 +47,41 @@ public class WordleService {
                String answer=game.get().getSecretWord();
                Map<Character, Long> countMap=answer.chars().mapToObj(c->(char)c)
                        .collect(Collectors.groupingBy(Function.identity(),Collectors.counting()));
+
+                for(int i=0;i<5;i++)
+                {
+                    char ch = guessWord.charAt(i);
+                    if(guessWord.charAt(i)==answer.charAt(i))
+                    {
+                        arr[i]="Correct";
+                        countMap.put(ch, countMap.get(ch)-1);
+                    }
+                }
                for(int i=0;i<5;i++)
                {
                   char ch=guessWord.charAt(i);
-
-                  if(countMap.containsKey(ch))
+                  if(!arr[i].isEmpty())
                   {
-                      int val= Math.toIntExact(countMap.getOrDefault(ch, 0L));
-                       if(val==0)
-                       {
-                            arr[i]="absent";
-                       }
-                       else
-                       {
-                           val--;
-                           if(answer.charAt(i)==guessWord.charAt(i))
-                                 arr[i]="correct";
-                           else
-                               arr[i]="present";
-
-                           countMap.put(ch, (long) val);
-                       }
+                      continue;
                   }
-
                   else
-                      arr[i]="absent";
+                  {
+                     if(countMap.containsKey(ch))
+                      {
+                          countMap.put(ch, countMap.get(ch)-1);
+                        arr[i]="Present";
+                      }
+                     else
+                         arr[i]="Absent";
+                  }
                }
 
            }
-        GuessResultDto guessResultDto=new GuessResultDto(checkWordDto.getGameId(),arr);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(HttpStatus.OK,"guess result validated",guessResultDto));
+        else
+        {
+           throw  new GameNotFoundException("Game Id not found for "+checkWordDto.getGameId());
+        }
+        return new GuessResultDto(checkWordDto.getGameId(),arr);
 
     }
 

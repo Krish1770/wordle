@@ -4,6 +4,7 @@ import com.example.wordle_backend.dto.CheckWordDto;
 import com.example.wordle_backend.dto.ResponseDto;
 import com.example.wordle_backend.service.WordleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,15 +15,16 @@ public class WordleController {
     @Autowired
     private WordleService wordleService;
 
-    @GetMapping("secretWord")
+    @PostMapping("secretWord")
     public ResponseEntity<ResponseDto> getSecretWord()
     {
-        return wordleService.getSecretWord();
+        return  ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(HttpStatus.OK,"secret word id retrieved",wordleService.getSecretWord()));
     }
 
     @PostMapping("validate")
     public ResponseEntity<ResponseDto> validateWord(@RequestBody CheckWordDto checkWordDto )
     {
-        return wordleService.validateWord(checkWordDto);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(HttpStatus.OK,"secret word id retrieved",wordleService.validateWord(checkWordDto)));
+
     }
 }
