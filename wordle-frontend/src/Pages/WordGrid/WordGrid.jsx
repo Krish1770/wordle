@@ -1,6 +1,19 @@
-import React from 'react'
+import React,{ useState,useRef } from 'react'
 
 function WordGrid() {
+
+  const[grid,setGrid]= useState(Array(30).fill(''));
+  const newRefs= useRef([]);
+   const handleCharChange=(e,index)=>
+   {
+      const newVal=e.target.value;
+
+      const newArr = [...grid];
+      newArr[index]=newVal.slice(-1).toUpperCase();
+      setGrid(newArr);
+       newRefs.current[index+1]?.focus();
+       console.log(newRefs)
+   }
   return (
     <div className='container d-flex justify-content-center mt-4'>
         <div className='d-grid gap-2'
@@ -8,14 +21,17 @@ function WordGrid() {
 
 
         {
-            Array.from({length : 5 *6}).
-            map((_,index)=>
+       
+            grid.map((length,index)=>
             (
-                <div
+                <input
                 key={index}
-                className='border border-dark'
+                value={length}
+                ref={(el)=>{newRefs.current[index]=el}}
+                className='border border-dark text-center fw-bold'
+                onChange={(e) => handleCharChange(e,index)}
                 style ={{height:'55px' }}
-                ></div>
+                ></input>
             ))
         }
                 </div>
